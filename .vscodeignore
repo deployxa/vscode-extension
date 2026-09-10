@@ -1,0 +1,11 @@
+.git/**
+.github/**
+.vscode/**
+src/**
+tests/**
+node_modules/**
+tsconfig.json
+*.vsix
+bin/**
+polyfill.cjs
+**/*.map

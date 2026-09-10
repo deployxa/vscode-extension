@@ -1,0 +1,318 @@
+{
+  "name": "deployxa-vscode",
+  "displayName": "Deploy with AI — Deployxa",
+  "description": "Deploy, monitor, and manage Deployxa applications directly from Visual Studio Code with secure authentication, live logs, and deployment workflows.",
+  "version": "0.4.0",
+  "publisher": "deployxa",
+  "license": "SEE LICENSE IN LICENSE",
+  "pricing": "Free",
+  "icon": "logo_new.png",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "deployxa",
+    "deployment",
+    "cloud",
+    "devops",
+    "docker",
+    "kubernetes",
+    "hosting",
+    "cloud-platform",
+    "cloud-native",
+    "paas",
+    "ci-cd",
+    "containers",
+    "serverless",
+    "developer-tools",
+    "monitoring"
+  ],
+  "homepage": "https://deployxa.com",
+  "main": "./dist/extension.cjs",
+  "activationEvents": [
+    "onView:deployxa.home",
+    "onView:deployxa.projects",
+    "onView:deployxa.dashboard",
+    "onCommand:deployxa.signIn",
+    "onUri"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "deployxa.signIn",
+        "title": "Deployxa: Sign In with API Token"
+      },
+      {
+        "command": "deployxa.createAccount",
+        "title": "Deployxa: Create Free Account"
+      },
+      {
+        "command": "deployxa.configureFunnelAnalytics",
+        "title": "Deployxa: Privacy and Usage Analytics"
+      },
+      {
+        "command": "deployxa.signOut",
+        "title": "Deployxa: Sign Out"
+      },
+      {
+        "command": "deployxa.refresh",
+        "title": "Deployxa: Refresh Projects"
+      },
+      {
+        "command": "deployxa.deploy",
+        "title": "Deployxa: Deploy Project"
+      },
+      {
+        "command": "deployxa.openProject",
+        "title": "Deployxa: Open Project in Dashboard"
+      },
+      {
+        "command": "deployxa.openProjectView",
+        "title": "Deployxa: Open Project Overview"
+      },
+      {
+        "command": "deployxa.openDeployment",
+        "title": "Deployxa: Open Deployment"
+      },
+      {
+        "command": "deployxa.cancelDeployment",
+        "title": "Deployxa: Cancel Deployment"
+      },
+      {
+        "command": "deployxa.rollbackDeployment",
+        "title": "Deployxa: Roll Back Deployment"
+      },
+      {
+        "command": "deployxa.showLogs",
+        "title": "Deployxa: Show Deployment Logs"
+      },
+      {
+        "command": "deployxa.selectOrganization",
+        "title": "Deployxa: Select Organization"
+      },
+      {
+        "command": "deployxa.linkWorkspace",
+        "title": "Deployxa: Link Current Workspace"
+      },
+      {
+        "command": "deployxa.openDashboard",
+        "title": "Deployxa: Open Dashboard"
+      },
+      {
+        "command": "deployxa.connectGitHub",
+        "title": "Deployxa: Connect GitHub Account"
+      },
+      {
+        "command": "deployxa.deployRepository",
+        "title": "Deployxa: Deploy GitHub Repository"
+      },
+      {
+        "command": "deployxa.deployFolderUpload",
+        "title": "Deployxa: Upload and Deploy Folder"
+      },
+      {
+        "command": "deployxa.deployCurrentWorkspace",
+        "title": "Deployxa: Deploy Current Workspace"
+      },
+      {
+        "command": "deployxa.deployFolder",
+        "title": "Deployxa: Deploy from Folder"
+      },
+      {
+        "command": "deployxa.streamLogs",
+        "title": "Deployxa: Stream Deployment Logs"
+      },
+      {
+        "command": "deployxa.switchAccount",
+        "title": "Deployxa: Switch Account"
+      },
+      {
+        "command": "deployxa.addAccount",
+        "title": "Deployxa: Add Account"
+      },
+      {
+        "command": "deployxa.removeAccount",
+        "title": "Deployxa: Remove Account"
+      },
+      {
+        "command": "deployxa.manageTokens",
+        "title": "Deployxa: Manage Tokens"
+      },
+      {
+        "command": "deployxa.copyUrl",
+        "title": "Deployxa: Copy Live URL"
+      },
+      {
+        "command": "deployxa.diagnoseDeployment",
+        "title": "Deployxa: Explain Deployment Issue"
+      },
+      {
+        "command": "deployxa.openSettings",
+        "title": "Deployxa: Open Settings"
+      },
+      {
+        "command": "deployxa.askAssistant",
+        "title": "Deployxa: Ask Deployxa"
+      },
+      {
+        "command": "deployxa.addDomain",
+        "title": "Deployxa: Add Domain"
+      },
+      {
+        "command": "deployxa.addEnvironmentVariable",
+        "title": "Deployxa: Add Environment Variable"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "deployxa",
+          "title": "Deployxa",
+          "icon": "media/deployxa.svg"
+        }
+      ]
+    },
+    "views": {
+      "deployxa": [
+        {
+          "id": "deployxa.home",
+          "name": "Home",
+          "type": "webview"
+        },
+        {
+          "id": "deployxa.projects",
+          "name": "Advanced Explorer"
+        },
+        {
+          "id": "deployxa.dashboard",
+          "name": "Dashboard",
+          "type": "webview"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "deployxa.projects",
+        "contents": "Sign in to Deployxa to view your projects and deployments. [Sign in with API token](command:deployxa.signIn)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "deployxa.refresh",
+          "when": "view == deployxa.projects",
+          "group": "navigation"
+        },
+        {
+          "command": "deployxa.deploy",
+          "when": "view == deployxa.projects",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "deployxa.deploy",
+          "when": "viewItem == deployxa.project",
+          "group": "inline"
+        },
+        {
+          "command": "deployxa.openProject",
+          "when": "viewItem == deployxa.project",
+          "group": "navigation"
+        },
+        {
+          "command": "deployxa.openProjectView",
+          "when": "viewItem == deployxa.project",
+          "group": "navigation"
+        },
+        {
+          "command": "deployxa.showLogs",
+          "when": "viewItem =~ /deployxa.deployment/",
+          "group": "inline"
+        },
+        {
+          "command": "deployxa.streamLogs",
+          "when": "viewItem =~ /deployxa.deployment/",
+          "group": "navigation"
+        },
+        {
+          "command": "deployxa.openDeployment",
+          "when": "viewItem =~ /deployxa.deployment/",
+          "group": "navigation"
+        },
+        {
+          "command": "deployxa.cancelDeployment",
+          "when": "viewItem == deployxa.deployment.active",
+          "group": "navigation"
+        },
+        {
+          "command": "deployxa.rollbackDeployment",
+          "when": "viewItem == deployxa.deployment.success",
+          "group": "navigation"
+        },
+        {
+          "command": "deployxa.copyUrl",
+          "when": "viewItem =~ /deployxa.deployment/",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Deployxa",
+      "properties": {
+        "deployxa.apiUrl": {
+          "type": "string",
+          "default": "https://api.deployxa.com",
+          "description": "Deployxa Engine API URL."
+        },
+        "deployxa.dashboardUrl": {
+          "type": "string",
+          "default": "https://deployxa.com/dashboard",
+          "description": "Deployxa Dashboard URL."
+        },
+        "deployxa.organizationId": {
+          "type": "string",
+          "default": "",
+          "description": "Active Deployxa organization ID."
+        },
+        "deployxa.projectId": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "Deployxa project linked to this workspace."
+        },
+        "deployxa.refreshIntervalSeconds": {
+          "type": "number",
+          "default": 30,
+          "minimum": 0,
+          "maximum": 3600,
+          "description": "Automatic project refresh interval. Set to 0 to disable."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\"",
+    "build": "npm run clean && esbuild src/extension.ts --bundle --platform=node --format=cjs --target=node20 --external:vscode --outfile=dist/extension.cjs --sourcemap",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "package": "npm run typecheck && npm test && npm run build && node ./bin/pack.cjs",
+    "publish": "npm run package && node ./bin/publish.cjs",
+    "vscode:prepublish": "npm run build"
+  },
+  "dependencies": {
+    "@deployxa/contracts": "file:./packages/contracts",
+    "@deployxa/sdk": "file:./packages/sdk"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "@types/vscode": "^1.90.0",
+    "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.4.5"
+  }
+}

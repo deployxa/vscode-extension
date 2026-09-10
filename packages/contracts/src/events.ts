@@ -1,0 +1,148 @@
+import type { DeploymentDto, DomainDto, InvoiceDto, OrganizationDto, ProjectDto } from './dtos.js';
+
+export const PlatformEventType = {
+  DeploymentStarted: 'deployment.started',
+  DeploymentQueued: 'deployment.queued',
+  DeploymentCompleted: 'deployment.completed',
+  DeploymentFailed: 'deployment.failed',
+  DomainVerified: 'domain.verified',
+  CertificateIssued: 'certificate.issued',
+  OrganizationCreated: 'organization.created',
+  BillingInvoicePaid: 'billing.invoice_paid',
+  ProjectDeleted: 'project.deleted',
+  WorkerFinished: 'worker.finished',
+  BuildStarted: 'build.started',
+  BuildCompleted: 'build.completed',
+  ContainerStarted: 'container.started',
+  ContainerStopped: 'container.stopped',
+  ContainerRestarted: 'container.restarted',
+  RuntimeProvisioningStarted: 'runtime.provisioning_started',
+  RuntimeProvisioningCompleted: 'runtime.provisioning_completed',
+  RuntimeProvisioningFailed: 'runtime.provisioning_failed',
+  RuntimeHealthPassed: 'runtime.health_passed',
+  RuntimeHealthFailed: 'runtime.health_failed',
+  HealthPassed: 'health.passed',
+  ReleaseActivated: 'release.activated',
+  RollbackStarted: 'rollback.started',
+  RollbackFinished: 'rollback.finished',
+  DatabaseProvisioned: 'database.provisioned',
+  MemberInvited: 'member.invited',
+} as const;
+
+export type PlatformEventType = (typeof PlatformEventType)[keyof typeof PlatformEventType];
+
+export interface PlatformEvent<TType extends string = PlatformEventType, TData = unknown> {
+  id: string;
+  type: TType;
+  version: 1;
+  occurredAt: string;
+  organizationId?: string;
+  actorId?: string;
+  correlationId?: string;
+  causationId?: string;
+  data: TData;
+}
+
+export type DeploymentStartedEvent = PlatformEvent<'deployment.started', DeploymentDto>;
+export type DeploymentCompletedEvent = PlatformEvent<'deployment.completed', DeploymentDto>;
+export type DeploymentFailedEvent = PlatformEvent<'deployment.failed', DeploymentDto>;
+export type DomainVerifiedEvent = PlatformEvent<'domain.verified', DomainDto>;
+export type CertificateIssuedEvent = PlatformEvent<'certificate.issued', DomainDto>;
+export type OrganizationCreatedEvent = PlatformEvent<'organization.created', OrganizationDto>;
+export type BillingInvoicePaidEvent = PlatformEvent<'billing.invoice_paid', InvoiceDto>;
+export type ProjectDeletedEvent = PlatformEvent<'project.deleted', Pick<ProjectDto, 'id' | 'organizationId'>>;
+export type WorkerFinishedEvent = PlatformEvent<'worker.finished', { worker: string; jobId?: string; success: boolean }>;
+
+export const ANALYTICS_EVENT_NAMES = [
+  // Acquisition
+  'marketing_page_viewed',
+  'cta_clicked',
+  // Registration
+  'signup_started',
+  'signup_completed',
+  'email_verification_started',
+  'email_verification_completed',
+  'extension_registration_started',
+  'extension_registration_completed',
+  // Activation & Funnel
+  'extension_installed',
+  'extension_activated',
+  'home_opened',
+  'github_connection_started',
+  'github_connection_completed',
+  'project_created',
+  'repository_linked',
+  'deployment_started',
+  'deployment_succeeded',
+  'deployment_failed',
+  'deployment_retried',
+  'deployment_cancelled',
+  'deployment_rolled_back',
+  'second_deployment_started',
+  'user_returned',
+  // Product Features
+  'domain_added',
+  'domain_verified',
+  'database_created',
+  'monitoring_viewed',
+  'logs_viewed',
+  'deployment_logs_viewed',
+  'readiness_viewed',
+  'diagnosis_requested',
+  'ask_deployxa_used',
+  'environment_variable_added',
+  'environment_variable_updated',
+  'team_member_invited',
+  'api_token_created',
+  'billing_page_viewed',
+  'upgrade_started',
+  'subscription_created',
+  // Extension backwards compatibility
+  'upload_deployment_started',
+  'upload_deployment_succeeded',
+  'upload_deployment_failed',
+  'extension_authenticated',
+  'workspace_linked',
+  'registration_clicked',
+  'first_deployment_started',
+  'first_deployment_succeeded',
+  'first_deployment_failed',
+] as const;
+
+export type AnalyticsEventName = (typeof ANALYTICS_EVENT_NAMES)[number];
+
+export const ANALYTICS_SOURCES = [
+  'web',
+  'marketing',
+  'vscode',
+  'cli',
+  'engine',
+  'api',
+  'github_webhook',
+] as const;
+
+export type AnalyticsSource = (typeof ANALYTICS_SOURCES)[number] | string;
+
+export interface TrackAnalyticsEventRequest {
+  eventId: string;
+  eventName: AnalyticsEventName;
+  occurredAt?: string;
+  anonymousId?: string;
+  userId?: string;
+  organizationId?: string;
+  sessionId?: string;
+  source: AnalyticsSource;
+  properties?: Record<string, unknown>;
+  schemaVersion?: number;
+}
+
+export interface TrackAnalyticsBatchRequest {
+  events: TrackAnalyticsEventRequest[];
+}
+
+export interface TrackAnalyticsEventResponse {
+  accepted: true;
+  duplicate: boolean;
+  count?: number;
+}
+
