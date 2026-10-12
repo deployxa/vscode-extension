@@ -19,6 +19,17 @@ import type { HttpTransport, RequestOptions } from './transport.js';
 
 const q = (value: string) => encodeURIComponent(value);
 
+export interface CursorListParams { limit?: number; cursor?: string; }
+export interface CursorPage<T> { data: T[]; nextCursor: string | null; }
+export const cursorQuery = (params?: CursorListParams) => {
+  if (!params) return '';
+  const search = new URLSearchParams();
+  if (params.limit !== undefined) search.set('limit', String(params.limit));
+  if (params.cursor) search.set('cursor', params.cursor);
+  const value = search.toString();
+  return value ? `?${value}` : '';
+};
+
 export class AuthResource {
   constructor(private t: HttpTransport) {}
   me(o?: RequestOptions) { return this.t.request<UserDto>('GET', '/api/auth/me', undefined, o); }
@@ -29,6 +40,8 @@ export class AuthResource {
 export class ProjectsResource {
   constructor(private t: HttpTransport) {}
   list(o?: RequestOptions) { return this.t.request<ProjectDto[]>('GET', '/api/projects', undefined, o); }
+  /** Cursor-paginated projects; the Engine returns `{ data, nextCursor }` when limit/cursor is supplied. */
+  listPaginated(params: CursorListParams, o?: RequestOptions) { return this.t.request<CursorPage<ProjectDto>>('GET', `/api/projects${cursorQuery(params)}`, undefined, o); }
   get(id: string, o?: RequestOptions) { return this.t.request<ProjectDto>('GET', `/api/projects/${q(id)}`, undefined, o); }
   create(input: CreateProjectRequest, o?: RequestOptions) { return this.t.request<ProjectDto>('POST', '/api/projects', input, o); }
   update(id: string, input: Partial<CreateProjectRequest>, o?: RequestOptions) { return this.t.request<ProjectDto>('PATCH', `/api/projects/${q(id)}`, input, o); }
@@ -40,6 +53,8 @@ export class DeploymentsResource {
   constructor(private t: HttpTransport) {}
   create(input: CreateDeploymentRequest, o?: RequestOptions) { return this.t.request<DeploymentDto>('POST', '/api/deployments', input, o); }
   listAll(o?: RequestOptions) { return this.t.request<DeploymentDto[]>('GET', '/api/deployments', undefined, o); }
+  /** Cursor-paginated organization deployments; the Engine returns `{ data, nextCursor }` when limit/cursor is supplied. */
+  listAllPaginated(params: CursorListParams, o?: RequestOptions) { return this.t.request<CursorPage<DeploymentDto>>('GET', `/api/deployments${cursorQuery(params)}`, undefined, o); }
   list(projectId: string, o?: RequestOptions) { return this.t.request<DeploymentDto[]>('GET', `/api/deployments/project/${q(projectId)}`, undefined, o); }
   get(id: string, o?: RequestOptions) { return this.t.request<DeploymentDto>('GET', `/api/deployments/${q(id)}`, undefined, o); }
   diagnose(id: string, o?: RequestOptions) { return this.t.request<DeploymentDiagnosisDto>('GET', `/api/deployments/${q(id)}/diagnose`, undefined, o); }
@@ -239,6 +254,61 @@ export class ServicesResource {
   }
 }
 
+export interface DomainAvailabilityDto {
+  domain: string;
+  available: boolean;
+  registrationPriceCents?: number;
+  renewalPriceCents?: number;
+  transferPriceCents?: number;
+  currency?: string;
+}
+
+export interface RegistrantContactInput {
+  name: string;
+  email: string;
+  companyName?: string;
+  address: string;
+  city: string;
+  state: string;
+  country: string;
+  postalCode: string;
+  phoneCountryCode: string;
+  phone: string;
+}
+
+export interface RegisterDomainRequest {
+  projectId: string;
+  domain: string;
+  durationYears?: number;
+  privacy?: boolean;
+  premium?: boolean;
+  registrant?: RegistrantContactInput;
+}
+
+export class RegistrarResource {
+  constructor(private t: HttpTransport) {}
+
+  checkAvailability(domain: string, o?: RequestOptions) {
+    return this.t.request<DomainAvailabilityDto>('GET', `/api/domains/registrar/availability?domain=${encodeURIComponent(domain)}`, undefined, o);
+  }
+
+  getSuggestions(keyword: string, maxResults = 10, o?: RequestOptions) {
+    return this.t.request<any[]>('GET', `/api/domains/registrar/suggestions?keyword=${encodeURIComponent(keyword)}&maxResults=${maxResults}`, undefined, o);
+  }
+
+  listOrders(o?: RequestOptions) {
+    return this.t.request<any[]>('GET', '/api/domains/registrar/orders', undefined, o);
+  }
+
+  register(input: RegisterDomainRequest, o?: RequestOptions) {
+    return this.t.request<any>('POST', '/api/domains/registrar/register', input, o);
+  }
+
+  renew(domain: string, o?: RequestOptions) {
+    return this.t.request<any>('POST', `/api/domains/registrar/${encodeURIComponent(domain)}/renew`, {}, o);
+  }
+}
+
 
 function toSearchParams(query?: Record<string, string | number | boolean | undefined>): string {
   if (!query) return '';
@@ -250,4 +320,3 @@ function toSearchParams(query?: Record<string, string | number | boolean | undef
   }
   return params.size ? `?${params}` : '';
 }
-

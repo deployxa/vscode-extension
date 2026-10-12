@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.5.0
+
+- Integrated official **Deployxa Domain Registrar**:
+  - Added `Deployxa: Check Domain Availability & Pricing` (`deployxa.checkDomainAvailability`) to search any domain and inspect real-time pricing and renewal costs directly from VS Code.
+  - Added `Deployxa: Suggest Available Domains` (`deployxa.suggestDomains`) for smart keyword and brand name suggestions.
+  - Added `Deployxa: Purchase & Register Domain` (`deployxa.purchaseDomain`) with explicit confirmation modal, price display, organization credit billing, and instant project binding.
+  - Updated Project Overview panel with direct "🔍 Search & Buy" action in the Domains card.
+  - Updated Advanced Explorer tree to expand project domains with live DNS verification badges.
+- Added **AI & Model Context Protocol (MCP) Setup**:
+  - Added `Deployxa: Setup MCP for AI Copilot` (`deployxa.setupMcp`) to generate `.vscode/mcp.json` and `.mcp.json` configured for `https://mcp.deployxa.com/mcp`, enabling 1-click integration with VS Code GitHub Copilot, Cline, and AI extensions.
+- Upgraded vendored `@deployxa/contracts` and `@deployxa/sdk` with registrar clients, enhanced error typing, and bounded streaming parsing.
+
 ## 0.4.0
 
 - Added direct folder upload deployment for users without Git or GitHub.

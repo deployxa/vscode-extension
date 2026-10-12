@@ -246,6 +246,72 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand('deployxa.openSettings', () => vscode.commands.executeCommand('workbench.action.openSettings', '@ext:deployxa.deployxa-vscode')),
     vscode.commands.registerCommand('deployxa.copyText', async (value?: string) => { if (value) { await vscode.env.clipboard.writeText(value); void vscode.window.showInformationMessage('Copied to clipboard.'); } }),
     vscode.commands.registerCommand('deployxa.verifyDomain', (projectId?: string, domain?: string) => run('Verifying domain', async () => { if (!projectId || !domain) return; await clients.client().domains.verify(projectId, domain); void home.refresh(); void vscode.window.showInformationMessage(`Deployxa · Domain verification requested`, { detail: domain }); })),
+    vscode.commands.registerCommand('deployxa.checkDomainAvailability', (projectId?: string) => run('Checking domain', async () => {
+      const input = await vscode.window.showInputBox({ title: 'Check Domain Availability & Pricing', prompt: 'Enter a domain to check (e.g. myapp.com or mybrand.io)', ignoreFocusOut: true });
+      if (!input) return;
+      const domain = input.trim().toLowerCase();
+      const result = await clients.client().registrar.checkAvailability(domain);
+      const priceFmt = (cents?: number, cur = 'USD') => cents ? `$${(cents / 100).toFixed(2)} ${cur}` : '';
+      if (result.available) {
+        const costStr = result.registrationPriceCents ? `${priceFmt(result.registrationPriceCents, result.currency)}/year` : 'Standard price';
+        const renewStr = result.renewalPriceCents ? ` (renews at ${priceFmt(result.renewalPriceCents, result.currency)})` : '';
+        const choice = await vscode.window.showInformationMessage(`Domain ${result.domain} is AVAILABLE! Registration: ${costStr}${renewStr}`, { modal: true }, 'Purchase & Attach', 'Search Alternatives');
+        if (choice === 'Purchase & Attach') await vscode.commands.executeCommand('deployxa.purchaseDomain', projectId, result.domain, result.registrationPriceCents);
+        if (choice === 'Search Alternatives') await vscode.commands.executeCommand('deployxa.suggestDomains', projectId, domain.split('.')[0]);
+      } else {
+        const choice = await vscode.window.showWarningMessage(`Domain ${result.domain} is already registered or unavailable.`, 'Search Available Alternatives');
+        if (choice === 'Search Available Alternatives') await vscode.commands.executeCommand('deployxa.suggestDomains', projectId, domain.split('.')[0]);
+      }
+    })),
+    vscode.commands.registerCommand('deployxa.suggestDomains', (projectId?: string, initialKeyword?: string) => run('Suggesting domains', async () => {
+      const keyword = initialKeyword || await vscode.window.showInputBox({ title: 'Search Domain Suggestions', prompt: 'Enter a brand name or keyword (e.g. deployxa, mystore)', ignoreFocusOut: true });
+      if (!keyword) return;
+      const suggestions = await clients.client().registrar.getSuggestions(keyword.trim());
+      if (!suggestions.length) { void vscode.window.showInformationMessage(`No domain suggestions found for "${keyword}".`); return; }
+      const priceFmt = (cents?: number, cur = 'USD') => cents ? `$${(cents / 100).toFixed(2)} ${cur}` : '';
+      const items = suggestions.map(s => ({
+        label: `${s.domain} ${s.available ? '✓ AVAILABLE' : '✗ Taken'}`,
+        description: s.available && s.priceCents ? `${priceFmt(s.priceCents, s.currency)}/yr` : (s.available ? 'Available' : 'Unavailable'),
+        detail: s.available ? 'Click to purchase and attach to project' : 'Unavailable',
+        suggestion: s,
+      }));
+      const picked = await vscode.window.showQuickPick(items, { placeHolder: `Domain suggestions for "${keyword}" (Select to register)` });
+      if (picked && picked.suggestion.available) await vscode.commands.executeCommand('deployxa.purchaseDomain', projectId, picked.suggestion.domain, picked.suggestion.priceCents);
+    })),
+    vscode.commands.registerCommand('deployxa.purchaseDomain', (projectId?: string, targetDomain?: string, priceCents?: number) => run('Purchasing domain', async () => {
+      const project = projectId ? await clients.client().projects.get(projectId) : await selectProject();
+      if (!project) return;
+      const domain = targetDomain || await vscode.window.showInputBox({ title: `Purchase domain for ${project.name}`, prompt: 'Enter domain name to purchase', ignoreFocusOut: true });
+      if (!domain) return;
+      let cost = priceCents;
+      if (!cost) {
+        const check = await clients.client().registrar.checkAvailability(domain.trim());
+        if (!check.available) { void vscode.window.showErrorMessage(`Domain ${domain} is not available.`); return; }
+        cost = check.registrationPriceCents;
+      }
+      const priceStr = cost ? `$${(cost / 100).toFixed(2)} USD` : 'your organization credits';
+      const confirm = await vscode.window.showWarningMessage(`Purchase and register ${domain} for ${priceStr} using organization credits and attach to ${project.name}?`, { modal: true }, 'Confirm & Purchase');
+      if (confirm !== 'Confirm & Purchase') return;
+      const order = await clients.client().registrar.register({ projectId: project.id, domain: domain.trim(), durationYears: 1, privacy: true });
+      void vscode.window.showInformationMessage(`Domain ${domain} registered successfully! (Order ID: ${order.orderId || 'completed'})`);
+      DeployxaProjectPanel.show(clients.client(), project, context.extensionUri);
+      tree.refresh(); void home.refresh();
+    })),
+    vscode.commands.registerCommand('deployxa.setupMcp', () => run('Configuring MCP', async () => {
+      const folders = vscode.workspace.workspaceFolders;
+      if (!folders?.length) { void vscode.window.showWarningMessage('Open a workspace folder in VS Code first.'); return; }
+      const rootUri = folders[0].uri;
+      const mcpUri = vscode.Uri.joinPath(rootUri, '.vscode', 'mcp.json');
+      const rootMcpUri = vscode.Uri.joinPath(rootUri, '.mcp.json');
+      const config = { mcpServers: { deployxa: { url: "https://mcp.deployxa.com/mcp" } } };
+      const formatted = JSON.stringify(config, null, 2) + '\n';
+      const encoder = new TextEncoder();
+      await vscode.workspace.fs.createDirectory(vscode.Uri.joinPath(rootUri, '.vscode'));
+      await vscode.workspace.fs.writeFile(mcpUri, encoder.encode(formatted));
+      await vscode.workspace.fs.writeFile(rootMcpUri, encoder.encode(formatted));
+      const choice = await vscode.window.showInformationMessage('Deployxa MCP server configured for VS Code AI assistants (.vscode/mcp.json & .mcp.json).', 'Open Config');
+      if (choice === 'Open Config') await vscode.window.showTextDocument(await vscode.workspace.openTextDocument(mcpUri));
+    })),
     vscode.commands.registerCommand('deployxa.addDomain', (projectId?: string) => run('Adding domain', async () => { const project = projectId ? await clients.client().projects.get(projectId) : await selectProject(); if (!project) return; const domain = await vscode.window.showInputBox({ title: `Add a domain to ${project.name}`, prompt: 'Enter a domain such as app.example.com', ignoreFocusOut: true }); if (!domain) return; await clients.client().domains.add(project.id, { domain: domain.trim() }); DeployxaProjectPanel.show(clients.client(), project, context.extensionUri); })),
     vscode.commands.registerCommand('deployxa.deleteDomain', (projectId?: string, domain?: string) => run('Removing domain', async () => { if (!projectId || !domain) return; const answer = await vscode.window.showWarningMessage(`Remove ${domain}?`, { modal: true }, 'Remove domain'); if (answer !== 'Remove domain') return; await clients.client().domains.delete(projectId, domain); const project = await clients.client().projects.get(projectId); DeployxaProjectPanel.show(clients.client(), project, context.extensionUri); })),
     vscode.commands.registerCommand('deployxa.addEnvironmentVariable', (projectId?: string) => run('Adding environment variable', async () => { const project = projectId ? await clients.client().projects.get(projectId) : await selectProject(); if (!project) return; const key = await vscode.window.showInputBox({ title: 'Environment variable name', prompt: 'For example DATABASE_URL', ignoreFocusOut: true }); if (!key) return; const value = await vscode.window.showInputBox({ title: key, prompt: 'Enter the value. It will be stored securely by Deployxa.', password: true, ignoreFocusOut: true }); if (value === undefined) return; await clients.client().environment.set(project.id, { key: key.trim(), value }); DeployxaProjectPanel.show(clients.client(), project, context.extensionUri); })),

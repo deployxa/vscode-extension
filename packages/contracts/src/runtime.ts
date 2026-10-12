@@ -45,6 +45,6 @@ export interface HealthCheckDiagnostic {
   attempts: number;
   target: string;
   status?: number;
-  reason?: 'connection_refused' | 'timeout' | 'unexpected_status' | 'missing_route' | 'tls_error' | 'probe_error';
+  reason?: 'connection_refused' | 'timeout' | 'unexpected_status' | 'missing_route' | 'placeholder_page' | 'tls_error' | 'probe_error';
   message?: string;
 }

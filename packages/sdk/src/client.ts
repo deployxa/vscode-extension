@@ -1,5 +1,5 @@
 import { HttpTransport, type ClientOptions, type RequestOptions } from './transport.js';
-import { ActivityResource, AnalyticsResource, ApiTokensResource, ArtifactsResource, AssistantResource, AuditResource, AuthResource, BillingResource, CronResource, DatabaseResource, DatabasesResource, DeploymentProgressResource, DeploymentsResource, DnsGuidanceResource, DnsResource, DomainsResource, EnvironmentResource, LogsResource, MetricsResource, MonitoringResource, NotificationsResource, OrganizationsResource, ProjectsResource, ReadinessResource, RepositoriesResource, RuntimeResource, ServicesResource, SslResource, SupportResource, TemplatesResource, UsersResource, WorkflowsResource } from './resources.js';
+import { ActivityResource, AnalyticsResource, ApiTokensResource, ArtifactsResource, AssistantResource, AuditResource, AuthResource, BillingResource, CronResource, DatabaseResource, DatabasesResource, DeploymentProgressResource, DeploymentsResource, DnsGuidanceResource, DnsResource, DomainsResource, EnvironmentResource, LogsResource, MetricsResource, MonitoringResource, NotificationsResource, OrganizationsResource, ProjectsResource, ReadinessResource, RegistrarResource, RepositoriesResource, RuntimeResource, ServicesResource, SslResource, SupportResource, TemplatesResource, UsersResource, WorkflowsResource } from './resources.js';
 import { pollDeployment, pollValues, type PollOptions } from './streaming.js';
 import { SdkRequestClient } from './compatibility.js';
 
@@ -12,6 +12,7 @@ export class DeployxaClient {
   readonly readiness; readonly assistant; readonly database; readonly dns; readonly dnsGuidance; readonly deploymentProgress;
   readonly compatibility;
   readonly analytics; readonly apiTokens; readonly support; readonly cron; readonly services;
+  readonly registrar;
   constructor(options: ClientOptions = {}) {
     const transport = new HttpTransport(options);
     this.auth = new AuthResource(transport); this.projects = new ProjectsResource(transport);
@@ -34,6 +35,7 @@ export class DeployxaClient {
     this.support = new SupportResource(transport);
     this.cron = new CronResource(transport);
     this.services = new ServicesResource(transport);
+    this.registrar = new RegistrarResource(transport);
     this.compatibility = new SdkRequestClient(options);
   }
   streamDeployment(id: string, options?: PollOptions) { return pollDeployment(() => this.deployments.get(id), options); }

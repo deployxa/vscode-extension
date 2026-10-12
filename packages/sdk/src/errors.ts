@@ -8,6 +8,7 @@ export class RuntimeError extends DeployxaError {}
 export class ProviderError extends DeployxaError {}
 export class NetworkError extends DeployxaError { constructor(message: string, details?: unknown) { super(message, 0, 'NETWORK_ERROR', undefined, details); } }
 export class TimeoutError extends DeployxaError { constructor(message = 'Request timed out.') { super(message, 408, 'TIMEOUT'); } }
+export class ResponseTooLargeError extends DeployxaError { constructor(readonly maxBytes: number, message = 'The Deployxa response exceeded the configured size limit.') { super(message, 0, 'RESPONSE_TOO_LARGE'); } }
 export class CompatibilityError extends DeployxaError {}
 
 export function sdkError(status: number, message: string, code?: string, requestId?: string, details?: unknown) {

@@ -2,7 +2,7 @@
   "name": "deployxa-vscode",
   "displayName": "Deploy with AI — Deployxa",
   "description": "Deploy, monitor, and manage Deployxa applications directly from Visual Studio Code with secure authentication, live logs, and deployment workflows.",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "publisher": "deployxa",
   "license": "SEE LICENSE IN LICENSE",
   "pricing": "Free",
@@ -160,6 +160,22 @@
       {
         "command": "deployxa.addDomain",
         "title": "Deployxa: Add Domain"
+      },
+      {
+        "command": "deployxa.checkDomainAvailability",
+        "title": "Deployxa: Check Domain Availability & Pricing"
+      },
+      {
+        "command": "deployxa.suggestDomains",
+        "title": "Deployxa: Suggest Available Domains"
+      },
+      {
+        "command": "deployxa.purchaseDomain",
+        "title": "Deployxa: Purchase & Register Domain"
+      },
+      {
+        "command": "deployxa.setupMcp",
+        "title": "Deployxa: Setup MCP for AI Copilot"
       },
       {
         "command": "deployxa.addEnvironmentVariable",

@@ -49,6 +49,19 @@ export class DeployxaTreeProvider implements vscode.TreeDataProvider<DeployxaNod
         const summary = await this.clients.client().monitoring.summary(node.project.id).catch(() => undefined);
         return [{ kind: 'monitoring', project: node.project, summary }];
       }
+      if (node.label === 'Domains') {
+        const domains = await this.clients.client().domains.list(node.project.id).catch(() => []);
+        if (!domains.length) {
+          return [
+            { kind: 'message', label: 'No custom domains yet. Click to search & buy.', command: 'deployxa.checkDomainAvailability' }
+          ];
+        }
+        return domains.map(d => ({
+          kind: 'message' as const,
+          label: `${d.domain} ${d.dnsVerified ? '✓' : '⌛'}`,
+          command: 'deployxa.openProjectView'
+        }));
+      }
       return [{ kind: 'message', label: `${node.label} is available through the Deployxa Dashboard.` }];
     }
     if (node.kind !== 'project') return [];
