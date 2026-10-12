@@ -2,9 +2,13 @@
   "name": "deployxa-vscode",
   "displayName": "Deploy with AI — Deployxa",
   "description": "Deploy, monitor, and manage Deployxa applications directly from Visual Studio Code with secure authentication, live logs, and deployment workflows.",
-  "version": "0.5.0",
+  "version": "0.5.2",
   "publisher": "deployxa",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deployxa/vscode-extension"
+  },
   "pricing": "Free",
   "icon": "logo_new.png",
   "engines": {

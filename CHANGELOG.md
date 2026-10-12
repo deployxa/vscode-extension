@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.2
+
+- Optimized package size by excluding raw packages source from VSIX distribution.
+- Verified MIT license metadata and repository links for Open VSX marketplace publication.
+- Added native Open VSX publishing pipeline (`npm run publish:ovsx`).
+
 ## 0.5.0
 
 - Integrated official **Deployxa Domain Registrar**:
