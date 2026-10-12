@@ -317,6 +317,7 @@
     "test": "tsx --test tests/*.test.ts",
     "package": "npm run typecheck && npm test && npm run build && node ./bin/pack.cjs",
     "publish": "npm run package && node ./bin/publish.cjs",
+    "publish:ovsx": "npm run package && node ./bin/publish-ovsx.cjs",
     "vscode:prepublish": "npm run build"
   },
   "dependencies": {
